@@ -156,6 +156,13 @@ document.addEventListener("DOMContentLoaded", function () {
     var d = L.parseDate(state.day);
     if (d.getMonth() !== state.m) { state.y = d.getFullYear(); state.m = d.getMonth(); renderMonth(); }
     else { $all(".cal__day").forEach(function (x) { x.setAttribute("aria-pressed", String(x === b)); }); renderDay(); }
+
+    // jump down to that day's events
+    var panel = $("[data-day-panel]");
+    var reduce = document.documentElement.getAttribute("data-motion") === "reduce" || window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    panel.setAttribute("tabindex", "-1");
+    panel.focus({ preventScroll: true });
+    panel.scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "start" });
   });
   document.addEventListener("click", function (e) {
     var b = e.target.closest("[data-ics]"); if (!b) return;
