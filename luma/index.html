@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Luma | Forsyth County Community Resources</title>
+  <meta name="description" content="Find food pantries, clinics, libraries, parks, support lines and other community resources in Forsyth County, Georgia.">
+  <meta name="theme-color" content="#FCFAF6">
+  <link rel="icon" href="favicon.ico">
+  <link rel="apple-touch-icon" href="img/apple-touch-icon.png">
+  <link rel="stylesheet" href="css/tokens.css">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/pages.css">
+  <script src="js/prefs.js"></script>
+</head>
+<body data-page="home">
+  <div data-site-header></div>
+
+  <main id="main" tabindex="-1">
+    <section class="hero" aria-labelledby="hero-title">
+      <div class="container hero__grid">
+        <div>
+          <p class="eyebrow">Forsyth County, Georgia</p>
+          <h1 id="hero-title">Find local resources in <em>Forsyth County</em></h1>
+          <p class="lede">Search food pantries, clinics, libraries, parks, support lines and more. Every listing links to the source we checked it against.</p>
+          <form class="searchbox searchbox--lg" action="directory.html" role="search">
+            <span data-icon="search"></span>
+            <label for="hero-q" class="sr-only">Search resources</label>
+            <input id="hero-q" name="q" type="search" placeholder="Try food pantry, clinic or library" autocomplete="off">
+            <button class="btn" type="submit">Search</button>
+          </form>
+          <div class="hero__popular">
+            <span>Popular:</span>
+            <a class="chip" href="directory.html?cat=food">Food</a>
+            <a class="chip" href="directory.html?cat=health">Health care</a>
+            <a class="chip" href="directory.html?cat=seniors">Seniors</a>
+            <a class="chip" href="directory.html?cat=rec">Parks</a>
+            <a class="chip" href="events.html">This week</a>
+          </div>
+        </div>
+
+        <div class="lumamap">
+          <div class="lumamap__head">
+            <span class="lumamap__title">Forsyth County</span>
+            <span class="lumamap__live" data-open-count></span>
+          </div>
+          <div data-lumamap-svg role="group" aria-label="Map of Forsyth County with a dot for each location. Each dot links to its listing."></div>
+          <div class="lumamap__tip" data-lumamap-tip aria-hidden="true"></div>
+          <div class="lumamap__foot">
+            <span><span data-stat="mapped">38</span> places on the map</span>
+            <a class="link-arrow" href="map.html">Open full map <span data-icon="arrow-right"></span></a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="container">
+      <div class="stats" aria-label="Quick numbers">
+        <div class="stat"><span class="stat__num" data-stat="resources">46</span><span class="stat__label">listings</span></div>
+        <div class="stat"><span class="stat__num" data-stat="categories">11</span><span class="stat__label">categories</span></div>
+        <div class="stat"><span class="stat__num" data-stat="parks">17</span><span class="stat__label">parks and trails</span></div>
+        <div class="stat"><span class="stat__num">24/7</span><span class="stat__label">crisis lines listed below</span></div>
+      </div>
+    </div>
+
+    <section class="section" aria-labelledby="browse-title">
+      <div class="container">
+        <div class="section-head reveal">
+          <h2 id="browse-title">Browse by category</h2>
+          <p>Pick a category to see every listing in it. You can narrow it down by cost, language and who it serves.</p>
+        </div>
+        <div class="cat-grid reveal" data-cat-grid></div>
+      </div>
+    </section>
+
+    <section class="section section--sunken" aria-labelledby="finder-title">
+      <div class="container finder">
+        <div class="reveal">
+          <h2 id="finder-title">Not sure where to start?</h2>
+          <p class="lede">Answer three quick questions and we'll narrow down the list for you.</p>
+          <ul class="finder__preview" data-finder-preview aria-label="Top matches"></ul>
+        </div>
+        <form class="finder__card reveal" data-finder action="directory.html">
+          <div class="finder__step"><fieldset><legend><span class="step-num">1</span>What do you need?</legend><div class="chip-row" data-finder-group="cat"></div></fieldset></div>
+          <div class="finder__step"><fieldset><legend><span class="step-num">2</span>Who is it for?</legend><div class="chip-row" data-finder-group="aud"></div></fieldset></div>
+          <div class="finder__step"><fieldset><legend><span class="step-num">3</span>When?</legend><div class="chip-row" data-finder-group="extra"></div></fieldset></div>
+          <div class="finder__result">
+            <div class="finder__count" aria-live="polite" data-finder-count></div>
+            <button class="btn" type="submit">See matches <span data-icon="arrow-right"></span></button>
+          </div>
+        </form>
+      </div>
+    </section>
+
+    <section class="section" aria-labelledby="events-title">
+      <div class="container">
+        <div class="section-head reveal">
+          <h2 id="events-title">Coming up</h2>
+          <p>Dates come from each organizer. Projected dates are marked so you can double-check them.</p>
+        </div>
+        <ol class="agenda" data-agenda></ol>
+        <p style="margin-top:var(--s-5)"><a class="link-arrow" href="events.html">Full calendar <span data-icon="arrow-right"></span></a></p>
+      </div>
+    </section>
+
+    <section class="section dark" aria-labelledby="crisis-title">
+      <div class="container">
+        <div class="section-head reveal">
+          <h2 id="crisis-title">If you need help right now</h2>
+          <p class="muted">These lines are free, confidential and answered 24 hours a day. For an emergency, call 911.</p>
+        </div>
+        <div class="crisis-grid reveal">
+          <div class="crisis-card"><h3>988 Suicide &amp; Crisis Lifeline</h3><a class="num" href="tel:988">Call or text 988</a><p>Mental health, substance use or suicidal crisis.</p></div>
+          <div class="crisis-card"><h3>Georgia Crisis &amp; Access Line</h3><a class="num" href="tel:18007154225">800-715-4225</a><p>Can send a mobile crisis team anywhere in Georgia.</p></div>
+          <div class="crisis-card"><h3>Family Haven hotline</h3><a class="num" href="tel:7708871121">770-887-1121</a><p>Shelter and support for people facing domestic violence.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" aria-labelledby="story-title">
+      <div class="container story reveal">
+        <img src="img/logo.png" alt="" width="200" height="154">
+        <div>
+          <h2 id="story-title">Why we called it Luma</h2>
+          <p>Luma comes from <em>lumen</em>, the Latin word for light. Forsyth County has grown from about 60,000 people in the mid-1990s to more than 280,000 today, and a lot of good services are easy to miss. We wanted one place that makes them easy to find.</p>
+          <p>Each listing was checked against a public source in October 2026. You can see every source on the <a href="sources.html">Sources page</a>.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section--tight" style="padding-bottom:clamp(3rem,6vw,5rem)" aria-labelledby="cta-title">
+      <div class="container">
+        <div class="cta-strip reveal">
+          <div>
+            <h2 id="cta-title">Know about something we missed?</h2>
+            <p>Tell us about it, or find a place to volunteer.</p>
+          </div>
+          <div class="cta-strip__actions">
+            <a class="btn" href="get-involved.html#suggest">Suggest a resource</a>
+            <a class="btn btn--ghost" href="get-involved.html">Volunteer</a>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div data-site-footer></div>
+
+  <script src="js/icons.js"></script>
+  <script src="data/resources.js"></script>
+  <script src="data/events.js"></script>
+  <script src="data/forsyth-boundary.js"></script>
+  <script src="js/site.js"></script>
+  <script src="js/home.js"></script>
+</body>
+</html>

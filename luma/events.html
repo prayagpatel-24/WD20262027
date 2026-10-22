@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Events | Luma Forsyth County</title>
+  <meta name="description" content="Upcoming elections, markets, support groups and holiday events in Forsyth County, Georgia.">
+  <meta name="theme-color" content="#FCFAF6">
+  <link rel="icon" href="favicon.ico">
+  <link rel="apple-touch-icon" href="img/apple-touch-icon.png">
+  <link rel="stylesheet" href="css/tokens.css">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/inner.css">
+  <script src="js/prefs.js"></script>
+</head>
+<body data-page="events">
+  <div data-site-header></div>
+
+  <main id="main" tabindex="-1">
+    <section class="page-hero">
+      <div class="container">
+        <h1>Events</h1>
+        <p class="lede">Elections, markets, support groups and holiday events around the county. Click any date to see what's on, or add an event to your own calendar.</p>
+      </div>
+    </section>
+
+    <div class="container events-wrap">
+      <p class="legend-note"><span class="badge badge--confirmed">Confirmed</span> set by the organizer <span class="badge">Recurring</span> regular schedule <span class="badge badge--warn">Projected</span> based on last year, so double-check</p>
+
+      <div class="events-toolbar">
+        <div class="segmented" role="group" aria-label="Calendar view">
+          <button type="button" data-view="month" aria-pressed="true"><span data-icon="calendar"></span>Month</button>
+          <button type="button" data-view="list" aria-pressed="false"><span data-icon="list"></span>List</button>
+        </div>
+        <div class="chip-row" role="group" aria-label="Filter by category" data-ev-cats></div>
+      </div>
+
+      <div data-month-view>
+        <div class="events-toolbar">
+          <div class="month-nav">
+            <button class="icon-btn" type="button" data-month="-1" aria-label="Previous month"><span data-icon="chevron-left"></span></button>
+            <h2 aria-live="polite" data-month-label>October 2026</h2>
+            <button class="icon-btn" type="button" data-month="1" aria-label="Next month"><span data-icon="chevron-right"></span></button>
+          </div>
+          <button class="btn btn--ghost btn--sm" type="button" data-today>Today</button>
+        </div>
+        <div class="cal" data-cal></div>
+        <section class="day-panel" aria-live="polite" data-day-panel></section>
+      </div>
+
+      <div data-list-view hidden>
+        <h2 class="sr-only">Upcoming events</h2>
+        <div data-list></div>
+      </div>
+    </div>
+  </main>
+
+  <div data-site-footer></div>
+
+  <script src="js/icons.js"></script>
+  <script src="data/resources.js"></script>
+  <script src="data/events.js"></script>
+  <script src="js/site.js"></script>
+  <script src="js/events.js"></script>
+</body>
+</html>

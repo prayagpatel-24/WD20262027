@@ -1,0 +1,12 @@
+{
+  "name": "luma-forsyth",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Luma: Forsyth County community resource website (FBLA Website Design 2026-27)",
+  "scripts": {
+    "dev": "vite"
+  },
+  "devDependencies": {
+    "vite": "^7.1.0"
+  }
+}
