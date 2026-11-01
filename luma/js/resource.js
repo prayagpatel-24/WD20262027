@@ -22,7 +22,7 @@ document.addEventListener("DOMContentLoaded", function () {
     seen[o.ev.id] = 1; return true;
   });
   var also = (r.also || []).map(function (a) { return CAT[a]; });
-  var checked = r.verified ? Lu.MONTHS[+r.verified.split("-")[1] - 1] + " " + r.verified.split("-")[0] : "";
+  var img = (window.LUMA_IMAGES || {})[r.id];
 
   main.innerHTML =
     '<section class="detail-head"><div class="container">' +
@@ -33,12 +33,12 @@ document.addEventListener("DOMContentLoaded", function () {
         (r.phone ? '<a class="btn" href="' + Lu.telHref(r.phone) + '">' + icon("phone") + "Call " + esc(r.phone) + "</a>" : "") +
         (r.lat ? '<a class="btn btn--ghost" href="' + Lu.directionsHref(r) + '" target="_blank" rel="noopener">' + icon("navigation") + "Directions</a>" : "") +
         (r.web ? '<a class="btn btn--ghost" href="' + esc(r.web) + '" target="_blank" rel="noopener">' + icon("globe") + "Website</a>" : "") +
-        '<button class="btn btn--ghost" type="button" data-save="' + r.id + '" aria-pressed="' + Lu.isSaved(r.id) + '">' + icon("bookmark") + "<span>Save</span></button>" +
       "</div>" +
     "</div></section>" +
 
     '<div class="container detail">' +
       "<div>" +
+        (img ? '<figure class="detail-photo"><img src="' + img.src + '" alt="' + esc(img.alt) + '" width="' + img.w + '" height="' + img.h + '"><figcaption>Photo: <a href="' + esc(img.page) + '" target="_blank" rel="noopener">' + esc(img.credit) + "</a></figcaption></figure>" : "") +
         "<h2>About</h2><p>" + esc(r.desc) + "</p>" +
         "<h2>Details</h2>" +
         '<dl class="facts">' +
@@ -50,12 +50,12 @@ document.addEventListener("DOMContentLoaded", function () {
         "</dl>" +
         (events.length ? '<h2>Coming up here</h2><ul class="ev-list">' + events.map(function (o) {
           var d = o.date;
-          return '<li class="ev-card" style="grid-template-columns:1fr"><div><h3><a href="events.html#' + o.ev.id + '">' + esc(o.ev.title) + "</a></h3>" +
+          return '<li class="ev-card" style="grid-template-columns:1fr"><div><h3><a href="calendar.html#' + o.ev.id + '">' + esc(o.ev.title) + "</a></h3>" +
             '<div class="ev-card__meta"><span>' + icon("calendar") + Lu.DAY_SHORT[d.getDay()] + ", " + Lu.MON_SHORT[d.getMonth()] + " " + d.getDate() + "</span>" +
             (o.ev.start ? "<span>" + icon("clock") + Lu.fmtTime(o.ev.start) + (o.ev.finish ? " to " + Lu.fmtTime(o.ev.finish) : "") + "</span>" : "") + "</div></div></li>";
         }).join("") + "</ul>" : "") +
-        '<div class="cite">' + icon("shield-check") + "<div>Checked " + esc(checked) + ' against <a href="' + esc(r.source.url) + '" target="_blank" rel="noopener">' + esc(r.source.label) + "</a>. " +
-          'Things change, so call before you go. <a href="get-involved.html?report=' + r.id + '#report">Something wrong?</a></div></div>' +
+        '<div class="cite"><div>Source: <a href="' + esc(r.source.url) + '" target="_blank" rel="noopener">' + esc(r.source.label) + "</a>. " +
+          '<a href="volunteering.html?report=' + r.id + '#report">Something wrong?</a></div></div>' +
       "</div>" +
 
       '<aside class="contact-card" aria-labelledby="contact-title">' +
@@ -75,7 +75,6 @@ document.addEventListener("DOMContentLoaded", function () {
       '<div class="section-head"><h2 id="rel-title">More in ' + esc(c.name) + '</h2><p><a class="link-arrow" href="directory.html?cat=' + c.id + '">See all ' + icon("arrow-right") + "</a></p></div>" +
       '<div class="card-grid">' + related.map(function (x) { return Lu.resourceCard(x); }).join("") + "</div></div></section>" : "");
 
-  Lu.refreshSaved();
   Lu.track("resource_view", { resource_id: r.id });
 
   if (r.lat && window.L) {

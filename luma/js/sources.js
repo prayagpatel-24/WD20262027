@@ -18,9 +18,14 @@ document.addEventListener("DOMContentLoaded", function () {
     }).join("");
   }
 
+  $("[data-photo-credits]").innerHTML = L.RES.map(function (r) {
+    var p = window.LUMA_IMAGES[r.id];
+    return p ? '<tr><td><a href="resource.html?id=' + r.id + '">' + esc(r.name) + '</a></td><td><a href="' + esc(p.page) + '" target="_blank" rel="noopener">' + esc(p.credit) + "</a>" + (p.license ? " (" + esc(p.license) + ")" : "") + "</td></tr>" : "";
+  }).join("");
+
   $("[data-n-res]").textContent = L.RES.length;
   $("[data-refs-res]").innerHTML = group(L.RES, function (r) { return r.source; }, function (r) { return r.name; },
     function (r, n) { return '<a href="resource.html?id=' + r.id + '">' + esc(n) + "</a>"; });
   $("[data-refs-ev]").innerHTML = group(L.EVENTS, function (e) { return e.source; }, function (e) { return e.title; },
-    function (e, n) { return '<a href="events.html#' + e.id + '">' + esc(n) + "</a>"; });
+    function (e, n) { return '<a href="calendar.html#' + e.id + '">' + esc(n) + "</a>"; });
 });

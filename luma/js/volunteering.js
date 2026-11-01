@@ -1,4 +1,4 @@
-// Get Involved page: volunteer list with interest filters, plus the two small forms.
+// Volunteering page: volunteer list with interest filters, plus the two small forms.
 // The forms don't have a server yet, so for now entries are saved in the browser.
 document.addEventListener("DOMContentLoaded", function () {
   "use strict";

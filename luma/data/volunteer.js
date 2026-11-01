@@ -1,4 +1,4 @@
-// Volunteer opportunities for the Get Involved page.
+// Volunteer opportunities for the Volunteering page.
 // resource links each one to its listing in resources.js (for phone, website and source).
 // type is used for the filter buttons.
 

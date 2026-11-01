@@ -23,10 +23,12 @@ document.addEventListener("DOMContentLoaded", function () {
     L.polygon([world, county], { interactive: false, stroke: false, fillColor: "#FCFAF6", fillOpacity: 0.72 }).addTo(map);
     L.polygon(county, { interactive: false, color: "#C98E3E", weight: 2, opacity: 0.9, fill: false }).addTo(map);
   }
+  // The min zoom has to be a whole number. The cluster plugin only works with whole zoom
+  // levels, and a min zoom like 11.5 made far-apart pins (like the 5 libraries) vanish.
   function lockZoom() {
     map.setMinZoom(0);
     map.fitBounds(countyBounds, { padding: [4, 4], animate: false });
-    map.setMinZoom(map.getZoom());
+    map.setMinZoom(Math.floor(map.getZoom()));
   }
   lockZoom();
   window.addEventListener("resize", function () { clearTimeout(lockZoom.t); lockZoom.t = setTimeout(lockZoom, 200); });
@@ -53,15 +55,20 @@ document.addEventListener("DOMContentLoaded", function () {
     className: "lpin", iconSize: [30, 36], iconAnchor: [15, 36], popupAnchor: [0, -32],
     html: '<svg viewBox="150 -890 660 800" width="30" height="36" aria-hidden="true"><path d="M458.5-103.5Q448-107 440-115q-42-38-91-87.5T258-309q-42-57-70-119t-28-124q0-150 96.5-239T480-880q127 0 223.5 89T800-552q0 62-28 124t-70 119q-42 57-91 106.5T520-115q-8 8-18.5 11.5T480-100q-11 0-21.5-3.5Z"/><circle cx="480" cy="-560" r="80"/></svg>'
   });
-  var cluster = L.markerClusterGroup({ showCoverageOnHover: false, spiderfyOnMaxZoom: true, zoomToBoundsOnClick: true });
+  // The pins (and the cluster layer that groups them) are rebuilt from scratch every time
+  // the filters change. Changing the same cluster layer while the map is still animating
+  // from the last search made every pin disappear, so we never reuse it.
+  var cluster = null;
   var markers = {};
-  mapped.forEach(function (r) {
+  function newClusterLayer() {
+    return L.markerClusterGroup({ showCoverageOnHover: false, spiderfyOnMaxZoom: true, zoomToBoundsOnClick: true });
+  }
+  function makeMarker(r) {
     var m = L.marker([r.lat, r.lng], { title: r.name, alt: r.name, riseOnHover: true, icon: PIN });
     m.bindPopup(function () { return popupHTML(r); }, { maxWidth: 280, minWidth: 220, className: "luma-popup" });
     m.on("click", function () { select(r.id, { fromMap: true }); Lu.track("map_pin_click", { resource_id: r.id }); });
-    markers[r.id] = m;
-  });
-  map.addLayer(cluster);
+    return m;
+  }
 
   function popupHTML(r) {
     var c = CAT[r.cat], st = Lu.openStatus(r.oh);
@@ -115,8 +122,12 @@ document.addEventListener("DOMContentLoaded", function () {
       shown.sort(function (a, b) { return a._d - b._d; });
     } else shown.sort(function (a, b) { return a.name.localeCompare(b.name); });
 
-    cluster.clearLayers();
-    cluster.addLayers(shown.map(function (r) { return markers[r.id]; }));
+    map.closePopup();
+    if (cluster) map.removeLayer(cluster);
+    cluster = newClusterLayer();
+    markers = {};
+    cluster.addLayers(shown.map(function (r) { return (markers[r.id] = makeMarker(r)); }));
+    map.addLayer(cluster);
 
     $("[data-map-count]").textContent = "Showing " + shown.length + " of " + mapped.length + " places" + (state.me ? ", closest first" : "");
     listEl.innerHTML = shown.length ? shown.map(function (r) {
