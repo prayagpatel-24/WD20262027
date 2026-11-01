@@ -4,9 +4,7 @@
 @media (min-width: 1000px) { .hero__grid { grid-template-columns: minmax(0, 1.1fr) minmax(0, .9fr); } }
 .hero h1 { font-size: calc(clamp(2.3rem, 1.6rem + 2.8vw, 3.6rem) * var(--text-scale)); font-weight: 400; margin-bottom: var(--s-4); max-width: 16ch; }
 .hero h1 em { font-style: normal; color: var(--gold-ink); }
-.hero .lede { margin-bottom: var(--s-6); }
-.hero__popular { display: flex; flex-wrap: wrap; align-items: center; gap: .4rem; margin-top: var(--s-5); }
-.hero__popular > span { font-size: var(--fs-xs); color: var(--text-faint); margin-right: .25rem; }
+.hero .lede { margin-bottom: 0; }
 
 /* small county map on the home page */
 .lumamap { position: relative; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-lg); padding: 1.25rem 1.25rem 1rem; box-shadow: var(--shadow); }
@@ -18,9 +16,8 @@
 .lumamap .county { fill: var(--gold-soft); stroke: var(--ink); stroke-width: 1; stroke-linejoin: round; opacity: .9; }
 .lumamap .city-label { fill: var(--text-faint); font: 500 10px var(--font-body); letter-spacing: .14em; text-transform: uppercase; }
 .lumamap .hotspot { cursor: pointer; outline: none; }
-.lumamap .hotspot .halo { opacity: .2; }
-.lumamap .hotspot .core { stroke: #fff; stroke-width: 1.5; }
-.lumamap .hotspot:hover .core, .lumamap .hotspot:focus .core { r: 6.5; }
+.lumamap .hotspot .core { stroke: #fff; stroke-width: 2; }
+.lumamap .hotspot:hover .core, .lumamap .hotspot:focus .core { r: 8; }
 .lumamap .hotspot:focus-visible .ring { stroke: var(--focus); stroke-width: 2; }
 .lumamap__tip {
   position: absolute; pointer-events: none; z-index: 3; transform: translate(-50%, calc(-100% - 12px));

@@ -23,9 +23,8 @@ document.addEventListener("DOMContentLoaded", function () {
     var dots = RES.filter(function (r) { return r.lat; }).map(function (r) {
       var c = L.CAT[r.cat], p = px(r.lng, r.lat), x = p[0].toFixed(1), y = p[1].toFixed(1);
       return '<a class="hotspot" href="resource.html?id=' + r.id + '" data-id="' + r.id + '" aria-label="' + esc(r.name) + '">' +
-        '<circle class="halo" cx="' + x + '" cy="' + y + '" r="11" fill="' + c.color + '"/>' +
         '<circle class="ring" cx="' + x + '" cy="' + y + '" r="9" fill="none" stroke="transparent"/>' +
-        '<circle class="core" cx="' + x + '" cy="' + y + '" r="5" fill="' + c.color + '"/></a>';
+        '<circle class="core" cx="' + x + '" cy="' + y + '" r="6.5" fill="' + c.color + '"/></a>';
     }).join("");
     host.innerHTML = '<svg viewBox="0 0 ' + W + " " + H + '" role="presentation"><path class="county" d="' + d + '"/>' + dots +
       '<text class="city-label" x="' + (cumming[0] + 34).toFixed(0) + '" y="' + (cumming[1] + 4).toFixed(0) + '">Cumming</text></svg>';
