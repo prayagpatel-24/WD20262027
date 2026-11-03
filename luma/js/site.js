@@ -4,11 +4,11 @@
   "use strict";
 
   var ICONS = window.LUMA_ICONS || {};
-  var CATS = window.LUMA_CATEGORIES || [];
-  var RES = window.LUMA_RESOURCES || [];
-  var EVENTS = window.LUMA_EVENTS || [];
-  var CAT = {};
-  CATS.forEach(function (c) { CAT[c.id] = c; });
+  var categories = window.LUMA_CATEGORIES || [];
+  var resources = window.LUMA_RESOURCES || [];
+  var events = window.LUMA_EVENTS || [];
+  var catById = {};
+  categories.forEach(function (c) { catById[c.id] = c; });
 
   function icon(name, cls) {
     var ic = ICONS[name] || { v: "0 0 512 512", b: "" };
@@ -38,6 +38,41 @@
     if (!r.address) return r.scope || "";
     return r.address + ", " + r.city + ", GA " + r.zip;
   }
+  // long category names are set a bit smaller so they don't make their row taller than the rest
+  function catName(c) { return c.name.length > 26 ? '<span class="long-name">' + esc(c.name) + "</span>" : esc(c.name); }
+  function domain(url) { return String(url).replace(/^https?:\/\/(www\.)?/, "").split("/")[0]; }
+
+  // "families, adults, seniors" -> "Families, adults and older adults (60+)"
+  function audPhrase(aud) {
+    var names = aud.filter(function (a) { return a !== "all" && a !== "volunteers"; }).map(function (a) {
+      return window.LUMA_AUDIENCES[a].toLowerCase();
+    });
+    var list = names.length > 1 ? names.slice(0, -1).join(", ") + " and " + names[names.length - 1] : names[0] || "";
+    var out;
+    if (aud.indexOf("all") > -1) out = "Everyone" + (list ? ", especially " + list : "");
+    else out = list.charAt(0).toUpperCase() + list.slice(1);
+    if (aud.indexOf("volunteers") > -1) out = (out || "Everyone") + ". Volunteers welcome";
+    return out;
+  }
+
+  // logos have a lot of white space, so they're zoomed in to fill a small box next to the name
+  var logos = { "nami-fdl": 1.25, "family-haven": 2, "united-way": 1.9, "kfcb": 1.8 };
+  function logoBox(id, cls) {
+    var img = window.LUMA_IMAGES[id];
+    return '<span class="logo-box ' + cls + '" style="--zoom:' + logos[id] + '"><img src="' + img.src + '" alt="' + esc(img.alt) + '" width="' + img.w + '" height="' + img.h + '" loading="lazy"></span>';
+  }
+
+  // Map pins and dots use four colors from the logo palette instead of one color per category
+  var PIN_GROUPS = [
+    { id: "ink", label: "Health and mental health", cats: ["health", "crisis"] },
+    { id: "brown", label: "Food, housing, jobs, family and seniors", cats: ["food", "housing", "jobs", "youth", "seniors"] },
+    { id: "olive", label: "Education and government", cats: ["learn", "civic"] },
+    { id: "gold", label: "Parks and volunteering", cats: ["rec", "volunteer"] }
+  ];
+  function pinLegend() {
+    return PIN_GROUPS.map(function (g) { return '<li class="pin--' + g.id + '">' + g.label + "</li>"; }).join("");
+  }
+  function pinGroup(cat) { return PIN_GROUPS.filter(function (g) { return g.cats.indexOf(cat) > -1; })[0] || PIN_GROUPS[0]; }
 
   // "13:30" -> "1:30 p.m."
   function fmtTime(hhmm) {
@@ -111,7 +146,7 @@
   }
   function occurrences(from, to) {
     var out = [];
-    EVENTS.forEach(function (ev) {
+    events.forEach(function (ev) {
       var dates = [];
       if (ev.date) {
         var s = parseDate(ev.date), e = ev.end ? parseDate(ev.end) : s;
@@ -137,13 +172,7 @@
     out.sort(function (a, b) { return a.date - b.date || (a.ev.start || "").localeCompare(b.ev.start || ""); });
     return out;
   }
-  function today0() { var n = new Date(); return new Date(n.getFullYear(), n.getMonth(), n.getDate()); }
-
-  // Analytics events go into a GA4-style dataLayer. Nothing is sent anywhere yet.
-  function track(name, params) {
-    window.dataLayer = window.dataLayer || [];
-    window.dataLayer.push(Object.assign({ event: name }, params || {}));
-  }
+  function startOfToday() { var n = new Date(); return new Date(n.getFullYear(), n.getMonth(), n.getDate()); }
 
   function toast(msg, ic) {
     var region = $(".toast-region");
@@ -155,7 +184,6 @@
     setTimeout(function () { el.remove(); }, 2800);
   }
 
-  // header and footer
   var NAV = [
     { href: "index.html", label: "Home", page: "home" },
     { href: "directory.html", label: "Directory", page: "directory" },
@@ -171,7 +199,7 @@
       head.outerHTML =
         '<a class="skip-link" href="#main">Skip to main content</a>' +
         '<header class="site-header"><div class="container">' +
-          '<a class="brand" href="index.html"><img src="img/logo-horizontal.png" alt="Luma home" width="193" height="44"></a>' +
+          '<a class="brand" href="index.html"><img src="img/' + (document.documentElement.getAttribute("data-theme") === "dark" ? "logo-horizontal-light.png" : "logo-horizontal.png") + '" alt="Luma home" width="193" height="44"></a>' +
           '<nav class="nav" id="site-nav" aria-label="Main">' +
             '<button class="icon-btn nav__close" type="button" data-close-nav aria-label="Close menu">' + icon("x") + "</button>" +
             '<ul class="nav__list">' + NAV.map(function (n) {
@@ -185,20 +213,13 @@
     }
     var foot = $("[data-site-footer]");
     if (foot) {
+      var links = NAV.slice(1).concat([{ href: "submit.html#add", label: "Suggest a resource" }, { href: "submit.html#report", label: "Report a problem" }, { href: "sources.html", label: "Sources" }]);
       foot.outerHTML =
         '<footer class="site-footer"><div class="container">' +
-          '<div class="footer-top">' +
-            '<div class="footer-brand"><img src="img/logo-light.png" alt="Luma" width="120" height="93">' +
-              "<p>A guide to free and low-cost services, programs and places in Forsyth County, Georgia.</p></div>" +
-            '<div class="footer-col"><h2>Find help</h2><ul>' +
-              '<li><a href="directory.html">Directory</a></li><li><a href="map.html">Map</a></li><li><a href="calendar.html">Calendar</a></li><li><a href="directory.html?cat=crisis">Crisis support</a></li></ul></div>' +
-            '<div class="footer-col"><h2>Help out</h2><ul>' +
-              '<li><a href="volunteering.html">Volunteering</a></li><li><a href="volunteering.html#suggest">Suggest a resource</a></li><li><a href="volunteering.html#report">Report a problem</a></li></ul></div>' +
-            '<div class="footer-col"><h2>Info</h2><ul>' +
-              '<li><a href="sources.html">Sources</a></li></ul></div>' +
-          "</div>" +
-          '<div class="footer-bottom"><p>Need help now? Call or text <a href="tel:988">988</a> &middot; Georgia Crisis &amp; Access Line <a href="tel:18007154225">800-715-4225</a> &middot; Family Haven <a href="tel:7708871121">770-887-1121</a> &middot; Emergency <a href="tel:911">911</a></p>' +
-          "<p>&copy; 2026 Luma &middot; FBLA Website Design</p></div>" +
+          '<div class="footer-row"><img src="img/logo-light.png" alt="Luma" width="64" height="50">' +
+            '<ul class="footer-links">' + links.map(function (n) { return '<li><a href="' + n.href + '">' + n.label + "</a></li>"; }).join("") + "</ul></div>" +
+          '<p class="footer-crisis">Need help now? Call or text <a href="tel:988">988</a> &middot; Georgia Crisis &amp; Access Line <a href="tel:18007154225">800-715-4225</a> &middot; Family Haven <a href="tel:7708871121">770-887-1121</a> &middot; Emergency <a href="tel:911">911</a></p>' +
+          '<p class="footer-note">&copy; 2026 Luma &middot; FBLA Website Design</p>' +
         "</div></footer>" +
         '<div class="toast-region" role="status" aria-live="polite"></div>';
     }
@@ -213,12 +234,19 @@
       '<dialog class="panel" id="display-panel" aria-labelledby="display-title"><div class="panel__inner">' +
         '<div class="panel__head"><h2 id="display-title">Display</h2><button class="icon-btn" type="button" data-close aria-label="Close">' + icon("x") + "</button></div>" +
         '<div class="panel__body">' +
+          '<div class="setting" data-listen hidden><span class="setting__label">Listen</span>' +
+            '<button class="btn btn--ghost" type="button" data-read-aloud aria-pressed="false">Read this page aloud</button></div>' +
           '<div class="setting"><span class="setting__label" id="lbl-size">Text size</span>' +
             '<div class="segmented" role="group" aria-labelledby="lbl-size" data-pref="scale">' +
-              '<button type="button" data-val="1" aria-label="Default text size">A</button><button type="button" data-val="1.15" aria-label="Large text">A+</button><button type="button" data-val="1.3" aria-label="Extra large text">A++</button></div></div>' +
-          '<label class="toggle">Higher contrast text<span class="switch"><input type="checkbox" data-pref="contrast"><span></span></span></label>' +
+              '<button type="button" data-val="1" aria-label="Text size 100 percent">100%</button><button type="button" data-val="1.15" aria-label="Text size 115 percent">115%</button><button type="button" data-val="1.3" aria-label="Text size 130 percent">130%</button><button type="button" data-val="1.5" aria-label="Text size 150 percent">150%</button></div></div>' +
+          '<div class="setting"><span class="setting__label" id="lbl-theme">Colors</span>' +
+            '<div class="segmented" role="group" aria-labelledby="lbl-theme" data-pref="theme">' +
+              '<button type="button" data-val="light">Light</button><button type="button" data-val="dark">Dark</button></div></div>' +
+          '<label class="toggle">Higher contrast<span class="switch"><input type="checkbox" data-pref="contrast"><span></span></span></label>' +
           '<label class="toggle">Underline all links<span class="switch"><input type="checkbox" data-pref="links"><span></span></span></label>' +
-          '<label class="toggle">Reduce motion<span class="switch"><input type="checkbox" data-pref="motion"><span></span></span></label>' +
+          '<label class="toggle">Wider text spacing<span class="switch"><input type="checkbox" data-pref="spacing"><span></span></span></label>' +
+          '<label class="toggle">Easier-to-read font<span class="switch"><input type="checkbox" data-pref="font"><span></span></span></label>' +
+          '<label class="toggle">Hide photos<span class="switch"><input type="checkbox" data-pref="images"><span></span></span></label>' +
         "</div>" +
         '<div class="panel__foot"><button class="btn btn--ghost btn--sm" type="button" data-reset-prefs>Reset</button></div>' +
       "</div></dialog>";
@@ -227,15 +255,19 @@
     while (wrap.firstChild) document.body.appendChild(wrap.firstChild);
   }
 
-  // display settings
-  var DEFAULT_PREFS = { scale: "1", contrast: false, motion: false, links: false };
+  var DEFAULT_PREFS = { scale: "1", theme: "light", contrast: false, links: false, spacing: false, font: false, images: false };
   function getPrefs() { return Object.assign({}, DEFAULT_PREFS, store("luma.prefs") || {}); }
   function applyPrefs(p) {
     var r = document.documentElement;
     r.style.setProperty("--text-scale", p.scale);
     if (p.contrast) r.setAttribute("data-contrast", "high"); else r.removeAttribute("data-contrast");
-    if (p.motion) r.setAttribute("data-motion", "reduce"); else r.removeAttribute("data-motion");
     if (p.links) r.setAttribute("data-links", "underline"); else r.removeAttribute("data-links");
+    if (p.spacing) r.setAttribute("data-spacing", "wide"); else r.removeAttribute("data-spacing");
+    if (p.font) r.setAttribute("data-font", "readable"); else r.removeAttribute("data-font");
+    if (p.images) r.setAttribute("data-images", "hide"); else r.removeAttribute("data-images");
+    if (p.theme === "dark") r.setAttribute("data-theme", "dark"); else r.removeAttribute("data-theme");
+    var logo = $(".brand img");
+    if (logo) logo.src = "img/" + (p.theme === "dark" ? "logo-horizontal-light.png" : "logo-horizontal.png");
     syncPrefControls(p);
   }
   function syncPrefControls(p) {
@@ -247,12 +279,49 @@
   }
   function setPref(key, val) {
     var p = getPrefs(); p[key] = val; store("luma.prefs", p); applyPrefs(p);
-    track("display_setting", { setting: key, value: String(val) });
   }
 
-  function byId(id) { return RES.filter(function (r) { return r.id === id; })[0]; }
+  // reads the main part of the page with the browser's own voice. Chrome stops long
+  // utterances after about 15 seconds, so the text is spoken in short pieces.
+  function wireReadAloud() {
+    var btn = $("[data-read-aloud]");
+    if (!btn || !("speechSynthesis" in window)) return;
+    $("[data-listen]").hidden = false;
+    function setState(on) {
+      btn.setAttribute("aria-pressed", String(on));
+      btn.textContent = on ? "Stop reading" : "Read this page aloud";
+    }
+    btn.addEventListener("click", function () {
+      if (btn.getAttribute("aria-pressed") === "true") { speechSynthesis.cancel(); setState(false); return; }
+      var text = $("main").innerText.replace(/\s+/g, " ").trim();
+      var pieces = [], cur = "";
+      (text.match(/[^.!?]+[.!?]*\s*/g) || [text]).forEach(function (sentence) {
+        if ((cur + sentence).length > 200 && cur) { pieces.push(cur); cur = ""; }
+        cur += sentence;
+      });
+      if (cur) pieces.push(cur);
+      // a run of text with no full stops (like a list of links) can still be too long
+      pieces = pieces.reduce(function (all, piece) {
+        while (piece.length > 220) {
+          var cut = piece.lastIndexOf(" ", 220);
+          all.push(piece.slice(0, cut)); piece = piece.slice(cut + 1);
+        }
+        return all.concat(piece);
+      }, []);
+      speechSynthesis.cancel();
+      pieces.forEach(function (piece, i) {
+        var u = new SpeechSynthesisUtterance(piece);
+        u.lang = document.documentElement.lang || "en-US";
+        if (i === pieces.length - 1) u.onend = function () { setState(false); };
+        speechSynthesis.speak(u);
+      });
+      setState(true);
+    });
+    window.addEventListener("pagehide", function () { speechSynthesis.cancel(); });
+  }
 
-  // wiring
+  function byId(id) { return resources.filter(function (r) { return r.id === id; })[0]; }
+
   function openDialog(d) { if (d && !d.open) d.showModal(); }
   function wireShell() {
     var nav = $("#site-nav"), scrim = $(".nav-scrim"), opener = $("[data-open-nav]");
@@ -278,51 +347,42 @@
       $all("[data-val]", g).forEach(function (b) { b.addEventListener("click", function () { setPref(key, b.getAttribute("data-val")); }); });
     });
     $("[data-reset-prefs]").addEventListener("click", function () { store("luma.prefs", DEFAULT_PREFS); applyPrefs(getPrefs()); });
+    wireReadAloud();
     syncPrefControls(getPrefs());
 
-    reveal(document);
   }
 
-  // fade sections in as they scroll into view
-  var io = null;
-  function reveal(root) {
-    var els = $all(".reveal:not(.is-in)", root || document);
-    if (!("IntersectionObserver" in window)) { els.forEach(function (el) { el.classList.add("is-in"); }); return; }
-    if (!io) io = new IntersectionObserver(function (entries) {
-      entries.forEach(function (en) { if (en.isIntersecting) { en.target.classList.add("is-in"); io.unobserve(en.target); } });
-    }, { rootMargin: "0px 0px -8% 0px" });
-    els.forEach(function (el) { io.observe(el); });
-  }
-
-  // listing card used on the directory and resource pages
-  function resourceCard(r, opts) {
-    opts = opts || {};
-    var c = CAT[r.cat], st = openStatus(r.oh), img = (window.LUMA_IMAGES || {})[r.id];
+  function listingCard(r, distance) {
+    var c = catById[r.cat], status = openStatus(r.oh), img = window.LUMA_IMAGES[r.id], logo = logos[r.id];
     var where = r.address ? r.address + ", " + r.city : (r.scope || "");
-    return '<article class="rcard" data-id="' + r.id + '">' +
-      (img ? '<img class="rcard__img" src="' + img.src + '" alt="' + esc(img.alt) + '" width="' + img.w + '" height="' + img.h + '" loading="lazy" decoding="async">' : "") +
-      '<div class="rcard__top"><span class="rcard__cat">' + esc(c.name) + "</span>" +
-        (st ? '<span class="badge ' + (st.open ? "badge--open" : "") + '">' + (st.open ? (r.oh === "24/7" ? "24/7" : "Open now") : "Closed now") + "</span>" : "") + "</div>" +
-      '<h3 class="rcard__title"><a href="resource.html?id=' + r.id + '">' + esc(r.name) + "</a></h3>" +
-      '<p class="rcard__blurb">' + esc(r.blurb) + "</p>" +
-      '<ul class="rcard__meta">' +
-        (where ? "<li>" + icon(r.lat ? "map-pin" : "globe") + "<span>" + esc(where) + (opts.distance != null ? " (" + opts.distance.toFixed(1) + " mi)" : "") + "</span></li>" : "") +
-        (r.phone ? "<li>" + icon("phone") + '<a class="rcard__phone" href="' + telHref(r.phone) + '" aria-label="Call ' + esc(r.name) + " at " + esc(r.phone) + '">' + esc(r.phone) + "</a></li>" : "") +
-      "</ul></article>";
+    return '<li class="card">' +
+      (img && !logo ? '<img class="card__img" src="' + img.src + '" alt="' + esc(img.alt) + '" width="' + img.w + '" height="' + img.h + '" loading="lazy">' : "") +
+      '<div class="card__body">' +
+        '<span class="cat-label">' + esc(c.name) + "</span>" +
+        '<div class="card__title">' + (logo ? logoBox(r.id, "card__logo") : "") +
+          '<h3><a href="resource.html?id=' + r.id + '">' + esc(r.name) + "</a></h3></div>" +
+        "<p>" + esc(r.blurb) + "</p>" +
+        '<ul class="card__meta">' +
+          (status ? '<li class="status' + (status.open ? " status--open" : "") + '">' + (status.open ? (r.oh === "24/7" ? "Open 24/7" : "Open now") : "Closed now") + "</li>" : "") +
+          (where ? "<li>" + esc(where) + (distance != null ? " (" + distance.toFixed(1) + " mi)" : "") + "</li>" : "") +
+          (r.phone ? '<li><a href="' + telHref(r.phone) + '" aria-label="Call ' + esc(r.name) + " at " + esc(r.phone) + '">' + esc(r.phone) + "</a></li>" : "") +
+        "</ul></div></li>";
   }
 
   window.Luma = {
-    icon: icon, esc: esc, $: $, $all: $all, store: store, track: track, toast: toast,
-    CAT: CAT, CATS: CATS, RES: RES, EVENTS: EVENTS, byId: byId,
+    icon: icon, esc: esc, $: $, $all: $all, store: store, toast: toast,
+    catById: catById, categories: categories, resources: resources, events: events, byId: byId,
     openStatus: openStatus, fmtTime: fmtTime, telHref: telHref, directionsHref: directionsHref, fullAddress: fullAddress,
-    occurrences: occurrences, parseDate: parseDate, dateKey: dateKey, addDays: addDays, today0: today0,
+    catName: catName, domain: domain, audPhrase: audPhrase, logos: logos, logoBox: logoBox, pinGroup: pinGroup, pinLegend: pinLegend,
+    occurrences: occurrences, parseDate: parseDate, dateKey: dateKey, addDays: addDays, startOfToday: startOfToday,
     DAY_NAMES: DAY_NAMES, DAY_SHORT: DAY_SHORT, MONTHS: MONTHS, MON_SHORT: MON_SHORT,
-    reveal: reveal, resourceCard: resourceCard,
+    listingCard: listingCard,
     inCat: function (r, cat) { return r.cat === cat || (r.also || []).indexOf(cat) > -1; },
-    milesBetween: function (a, b, c, d) {
-      var R = 3958.8, k = Math.PI / 180, dLat = (c - a) * k, dLon = (d - b) * k;
-      var x = Math.sin(dLat / 2) * Math.sin(dLat / 2) + Math.cos(a * k) * Math.cos(c * k) * Math.sin(dLon / 2) * Math.sin(dLon / 2);
-      return 2 * R * Math.atan2(Math.sqrt(x), Math.sqrt(1 - x));
+    // straight-line distance in miles (haversine formula)
+    milesBetween: function (lat1, lng1, lat2, lng2) {
+      var R = 3958.8, rad = Math.PI / 180, dLat = (lat2 - lat1) * rad, dLng = (lng2 - lng1) * rad;
+      var a = Math.sin(dLat / 2) * Math.sin(dLat / 2) + Math.cos(lat1 * rad) * Math.cos(lat2 * rad) * Math.sin(dLng / 2) * Math.sin(dLng / 2);
+      return 2 * R * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
     }
   };
 

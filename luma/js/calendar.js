@@ -1,18 +1,13 @@
 // Calendar page: month grid, category filter and "add to calendar" (.ics) downloads.
 document.addEventListener("DOMContentLoaded", function () {
   "use strict";
-  var L = window.Luma, $ = L.$, $all = L.$all, icon = L.icon, esc = L.esc;
-  var EVENTS = L.EVENTS, CAT = L.CAT, CATS = L.CATS;
+  var site = window.Luma, $ = site.$, $all = site.$all, icon = site.icon, esc = site.esc;
+  var events = site.events, catById = site.catById, categories = site.categories;
 
-  var today = L.today0();
-  var state = { cat: "", y: today.getFullYear(), m: today.getMonth(), day: L.dateKey(today) };
+  var today = site.startOfToday();
+  var state = { cat: "", y: today.getFullYear(), m: today.getMonth(), day: site.dateKey(today) };
 
-  function fmtDate(d, withYear) { return L.DAY_SHORT[d.getDay()] + ", " + L.MON_SHORT[d.getMonth()] + " " + d.getDate() + (withYear ? ", " + d.getFullYear() : ""); }
-  function timeText(ev) { return ev.start ? L.fmtTime(ev.start) + (ev.finish ? " to " + L.fmtTime(ev.finish) : "") : "All day"; }
-  function statusBadge(ev) {
-    return ev.status === "tentative" ? '<span class="badge badge--warn">Projected date</span>' :
-      ev.status === "recurring" ? '<span class="badge">Recurring</span>' : '<span class="badge badge--confirmed">Confirmed</span>';
-  }
+  function timeText(ev) { return ev.start ? site.fmtTime(ev.start) + (ev.finish ? " to " + site.fmtTime(ev.finish) : "") : "All day"; }
   function visible(ev) { return !state.cat || ev.cat === state.cat; }
 
   // calendar file (.ics) that Google, Apple and Outlook can all import
@@ -20,17 +15,17 @@ document.addEventListener("DOMContentLoaded", function () {
   function icsDT(dateStr, hhmm) { return icsDate(dateStr) + "T" + hhmm.replace(":", "") + "00"; }
   function icsEscape(s) { return String(s).replace(/[\\;,]/g, function (c) { return "\\" + c; }).replace(/\n/g, "\\n"); }
   function buildICS(ev) {
-    var first = ev.date || (ev.weekly && L.occurrences(L.parseDate(ev.weekly.from), L.parseDate(ev.weekly.until)).filter(function (o) { return o.ev.id === ev.id; })[0].key) ||
-      L.occurrences(L.parseDate(ev.monthly.from), L.parseDate(ev.monthly.until)).filter(function (o) { return o.ev.id === ev.id; })[0].key;
+    var first = ev.date || (ev.weekly && site.occurrences(site.parseDate(ev.weekly.from), site.parseDate(ev.weekly.until)).filter(function (o) { return o.ev.id === ev.id; })[0].key) ||
+      site.occurrences(site.parseDate(ev.monthly.from), site.parseDate(ev.monthly.until)).filter(function (o) { return o.ev.id === ev.id; })[0].key;
     var lines = ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//Luma Forsyth//Community Calendar//EN", "CALSCALE:GREGORIAN", "BEGIN:VEVENT",
       "UID:" + ev.id + "@luma-forsyth", "DTSTAMP:" + new Date().toISOString().replace(/[-:]/g, "").split(".")[0] + "Z", "SUMMARY:" + icsEscape(ev.title)];
     if (ev.start) {
       lines.push("DTSTART;TZID=America/New_York:" + icsDT(first, ev.start));
       lines.push("DTEND;TZID=America/New_York:" + icsDT(first, ev.finish || ev.start));
     } else {
-      var endD = L.addDays(L.parseDate(ev.end || ev.date), 1);
+      var endD = site.addDays(site.parseDate(ev.end || ev.date), 1);
       lines.push("DTSTART;VALUE=DATE:" + icsDate(first));
-      lines.push("DTEND;VALUE=DATE:" + icsDate(L.dateKey(endD)));
+      lines.push("DTEND;VALUE=DATE:" + icsDate(site.dateKey(endD)));
     }
     var codes = ["SU", "MO", "TU", "WE", "TH", "FR", "SA"];
     if (ev.weekly) lines.push("RRULE:FREQ=WEEKLY;BYDAY=" + ev.weekly.days.map(function (d) { return codes[d]; }).join(",") + ";UNTIL=" + icsDate(ev.weekly.until) + "T235959Z");
@@ -45,55 +40,67 @@ document.addEventListener("DOMContentLoaded", function () {
     a.href = URL.createObjectURL(blob); a.download = ev.id + ".ics";
     document.body.appendChild(a); a.click(); a.remove();
     setTimeout(function () { URL.revokeObjectURL(a.href); }, 1000);
-    L.toast("Calendar file downloaded", "calendar-plus");
-    L.track("ics_download", { event_id: ev.id });
+    site.toast("Calendar file downloaded", "calendar-plus");
   }
 
-  function card(ev, d) {
-    var c = CAT[ev.cat];
-    var res = ev.resource && L.byId(ev.resource);
-    return '<li class="ev-card" data-ev="' + ev.id + '">' +
-      '<div class="datebox" aria-hidden="true"><div class="datebox__m">' + L.MON_SHORT[d.getMonth()].replace(".", "") + '</div><div class="datebox__d">' + d.getDate() + '</div><div class="datebox__w">' + L.DAY_SHORT[d.getDay()] + "</div></div>" +
-      "<div><h3>" + esc(ev.title) + "</h3>" +
-        '<div class="ev-card__meta"><span>' + icon("calendar") + esc(fmtDate(d, true)) + "</span><span>" + icon("clock") + esc(timeText(ev)) + "</span>" +
-        "<span>" + icon("map-pin") + (res ? '<a href="resource.html?id=' + res.id + '">' + esc(ev.place) + "</a>" : esc(ev.place)) + "</span></div>" +
-        "<p>" + esc(ev.desc) + "</p>" +
-        '<div class="ev-card__foot"><span class="tag">' + esc(c.name) + "</span>" + statusBadge(ev) +
-          '<button type="button" class="btn btn--sm btn--ghost" data-ics="' + ev.id + '">' + icon("calendar-plus") + "Add to calendar</button>" +
-          '<span class="ev-card__src">Source: <a href="' + esc(ev.source.url) + '" target="_blank" rel="noopener">' + esc(ev.source.label) + "</a></span></div>" +
-      "</div></li>";
+  // weekly and monthly events get a dashed style in the grid
+  function isRegular(ev) { return ev.status === "recurring"; }
+  function repeatTag(ev) { return ev.weekly ? "Weekly" : "Monthly"; }
+  var ORD = { 1: "1st", 2: "2nd", 3: "3rd", 4: "4th", "-1": "last" };
+  function schedule(ev) {
+    if (ev.weekly) return "Every " + ev.weekly.days.map(function (d) { return site.DAY_NAMES[d]; }).join(" and ") + " through " + site.MON_SHORT[site.parseDate(ev.weekly.until).getMonth()] + " " + site.parseDate(ev.weekly.until).getDate();
+    return "The " + ev.monthly.nth.map(function (n) { return ORD[n]; }).join(" and ") + " " + site.DAY_NAMES[ev.monthly.day] + " of each month";
   }
 
-  var used = CATS.filter(function (c) { return EVENTS.some(function (e) { return e.cat === c.id; }); });
-  $("[data-ev-cats]").innerHTML = '<button type="button" class="chip" data-cat="">All</button>' + used.map(function (c) {
-    return '<button type="button" class="chip" data-cat="' + c.id + '">' + esc(c.short) + "</button>";
+  function item(ev) {
+    var c = catById[ev.cat];
+    var res = ev.resource && site.byId(ev.resource);
+    var rep = isRegular(ev);
+    return '<li class="ev' + (rep ? " ev--repeat" : "") + '" data-ev="' + ev.id + '">' +
+      '<p class="ev__when">' + esc(timeText(ev)) + (rep ? ' <span class="repeat-tag">' + repeatTag(ev) + "</span>" : "") + "</p>" +
+      "<h3>" + esc(ev.title) + (ev.status === "tentative" ? ' <span class="projected">Projected</span>' : "") + "</h3>" +
+      (rep ? '<p class="ev__place">' + esc(schedule(ev)) + "</p>" : "") +
+      '<p class="ev__place">' + (res ? '<a href="resource.html?id=' + res.id + '">' + esc(ev.place) + "</a>" : esc(ev.place)) + " &middot; " + esc(c.name) + "</p>" +
+      '<p class="ev__desc">' + esc(ev.desc) + "</p>" +
+      '<p class="ev__foot"><button type="button" class="link-btn" data-ics="' + ev.id + '">' + icon("calendar-plus", "icon--sm") + "Add to calendar</button>" +
+        '<span class="ev__src">Source: <a href="' + esc(ev.source.url) + '" target="_blank" rel="noopener">' + esc(ev.source.label) + "</a></span></p>" +
+    "</li>";
+  }
+
+  var used = categories.filter(function (c) { return events.some(function (e) { return e.cat === c.id; }); });
+  $("[data-ev-cats]").innerHTML = '<button type="button" data-cat="">All</button>' + used.map(function (c) {
+    return '<button type="button" data-cat="' + c.id + '">' + esc(c.short) + "</button>";
   }).join("");
 
-  // month grid
+  function dayOrder(a, b) { return isRegular(a.ev) - isRegular(b.ev); }
+
   function renderMonth() {
-    var first = new Date(state.y, state.m, 1), start = L.addDays(first, -first.getDay());
-    var last = new Date(state.y, state.m + 1, 0), end = L.addDays(last, 6 - last.getDay());
-    var occ = L.occurrences(start, end).filter(function (o) { return visible(o.ev); });
+    var first = new Date(state.y, state.m, 1), start = site.addDays(first, -first.getDay());
+    var last = new Date(state.y, state.m + 1, 0), end = site.addDays(last, 6 - last.getDay());
+    var found = site.occurrences(start, end).filter(function (o) { return visible(o.ev); });
     var byDay = {};
-    occ.forEach(function (o) { (byDay[o.key] = byDay[o.key] || []).push(o); });
-    $("[data-month-label]").textContent = L.MONTHS[state.m] + " " + state.y;
-    var html = '<div class="cal__head" aria-hidden="true">' + L.DAY_SHORT.map(function (d) { return "<div>" + d + "</div>"; }).join("") + '</div><div class="cal__grid">';
-    for (var d = new Date(start); d <= end; d = L.addDays(d, 1)) {
-      var k = L.dateKey(d), list = byDay[k] || [];
-      var label = L.DAY_NAMES[d.getDay()] + ", " + L.MONTHS[d.getMonth()] + " " + d.getDate() + ": " + (list.length ? list.length + " event" + (list.length > 1 ? "s" : "") : "no events");
+    found.forEach(function (o) { (byDay[o.key] = byDay[o.key] || []).push(o); });
+    $("[data-month-label]").textContent = site.MONTHS[state.m] + " " + state.y;
+    var html = '<div class="cal__head" aria-hidden="true">' + site.DAY_SHORT.map(function (d) { return "<div>" + d + "</div>"; }).join("") + '</div><div class="cal__grid">';
+    for (var d = new Date(start); d <= end; d = site.addDays(d, 1)) {
+      var k = site.dateKey(d), list = (byDay[k] || []).sort(dayOrder);
+      var label = site.DAY_NAMES[d.getDay()] + ", " + site.MONTHS[d.getMonth()] + " " + d.getDate() + (+d === +today ? ", today" : "") + ": " + (list.length ? list.length + " event" + (list.length > 1 ? "s" : "") : "no events");
       html += '<button type="button" class="cal__day' + (d.getMonth() !== state.m ? " is-out" : "") + (+d === +today ? " is-today" : "") + '" data-day="' + k + '" aria-pressed="' + (k === state.day) + '" aria-label="' + label + '">' +
-        '<span class="cal__num" aria-hidden="true">' + d.getDate() + '</span><span class="cal__evs" aria-hidden="true">' +
-        list.slice(0, 3).map(function (o) { return '<span class="cal__ev" style="--c:' + CAT[o.ev.cat].color + '">' + (o.ev.start ? L.fmtTime(o.ev.start).replace(" ", "") + " " : "") + esc(o.ev.title) + "</span>"; }).join("") +
-        (list.length > 3 ? '<span class="cal__more">+' + (list.length - 3) + " more</span>" : "") + "</span></button>";
+        '<span class="cal__num" aria-hidden="true">' + d.getDate() + "</span>" +
+        (list.length ? '<span class="cal__evs" aria-hidden="true">' + list.slice(0, 3).map(function (o) {
+          var rep = isRegular(o.ev);
+          return '<span class="cal__ev' + (rep ? " cal__ev--repeat" : "") + '">' + (o.ev.start ? '<span class="cal__time">' + site.fmtTime(o.ev.start) + "</span> " : "") + esc(o.ev.title) +
+            (rep ? ' <span class="repeat-tag">' + repeatTag(o.ev) + "</span>" : "") + "</span>";
+        }).join("") + (list.length > 3 ? '<span class="cal__more">' + (list.length - 3) + " more</span>" : "") + "</span>" : "") + "</button>";
     }
     $("[data-cal]").innerHTML = html + "</div>";
     renderDay();
   }
   function renderDay() {
-    var d = L.parseDate(state.day);
-    var occ = L.occurrences(d, d).filter(function (o) { return visible(o.ev); });
-    $("[data-day-panel]").innerHTML = "<h3>" + L.DAY_NAMES[d.getDay()] + ", " + L.MONTHS[d.getMonth()] + " " + d.getDate() + "</h3>" +
-      (occ.length ? '<ul class="ev-list">' + occ.map(function (o) { return card(o.ev, o.date); }).join("") + "</ul>" :
+    var d = site.parseDate(state.day);
+    var found = site.occurrences(d, d).filter(function (o) { return visible(o.ev); }).sort(dayOrder);
+    $("[data-day-panel]").innerHTML = "<h2>" + site.DAY_NAMES[d.getDay()] + ", " + site.MONTHS[d.getMonth()] + " " + d.getDate() + "</h2>" +
+      (found.length ? '<ul class="ev-list">' + found.map(function (o) { return item(o.ev); }).join("") + "</ul>" :
         '<p class="muted">Nothing on this day' + (state.cat ? " in this category" : "") + ". Try another date.</p>");
   }
 
@@ -102,54 +109,53 @@ document.addEventListener("DOMContentLoaded", function () {
     renderMonth();
   }
 
-  // scroll down to the selected day's events
-  function jumpToDay() {
-    var panel = $("[data-day-panel]");
-    var reduce = document.documentElement.getAttribute("data-motion") === "reduce" || window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    panel.setAttribute("tabindex", "-1");
-    panel.focus({ preventScroll: true });
-    panel.scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "start" });
+  function jumpTo(el) {
+    var reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    el.setAttribute("tabindex", "-1");
+    el.focus({ preventScroll: true });
+    if (el.getBoundingClientRect().top > window.innerHeight * .6 || el.getBoundingClientRect().top < 0) el.scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "start" });
   }
 
   $("[data-ev-cats]").addEventListener("click", function (e) {
     var b = e.target.closest("[data-cat]"); if (!b) return;
-    state.cat = b.getAttribute("data-cat"); render(); L.track("filter_apply", { filter: "category", value: state.cat || "all", surface: "calendar" });
+    state.cat = b.getAttribute("data-cat"); render();
   });
   $all("[data-month]").forEach(function (b) {
     b.addEventListener("click", function () {
       state.m += +b.getAttribute("data-month");
       if (state.m < 0) { state.m = 11; state.y--; } if (state.m > 11) { state.m = 0; state.y++; }
-      state.day = L.dateKey(new Date(state.y, state.m, 1)); renderMonth();
+      state.day = site.dateKey(new Date(state.y, state.m, 1)); renderMonth();
     });
   });
-  $("[data-today]").addEventListener("click", function () { state.y = today.getFullYear(); state.m = today.getMonth(); state.day = L.dateKey(today); renderMonth(); });
+  $("[data-today]").addEventListener("click", function () { state.y = today.getFullYear(); state.m = today.getMonth(); state.day = site.dateKey(today); renderMonth(); });
   $("[data-cal]").addEventListener("click", function (e) {
     var b = e.target.closest("[data-day]"); if (!b) return;
     state.day = b.getAttribute("data-day");
-    var d = L.parseDate(state.day);
+    var d = site.parseDate(state.day);
     if (d.getMonth() !== state.m) { state.y = d.getFullYear(); state.m = d.getMonth(); renderMonth(); }
     else { $all(".cal__day").forEach(function (x) { x.setAttribute("aria-pressed", String(x === b)); }); renderDay(); }
-    jumpToDay();
+    jumpTo($("[data-day-panel]"));
   });
   document.addEventListener("click", function (e) {
     var b = e.target.closest("[data-ics]"); if (!b) return;
-    var ev = EVENTS.filter(function (x) { return x.id === b.getAttribute("data-ics"); })[0];
+    var ev = events.filter(function (x) { return x.id === b.getAttribute("data-ics"); })[0];
     if (ev) downloadICS(ev);
   });
 
-  // Links like calendar.html#farmers-market open that event's next date.
+  // Links like calendar.html#election-day open that event's next date.
   // If it has already ended, they open its last date.
   function openFromHash() {
     var id = location.hash.replace("#", "");
-    if (!EVENTS.some(function (e) { return e.id === id; })) return;
+    var ev = events.filter(function (e) { return e.id === id; })[0];
+    if (!ev) return;
+    $all(".ev.is-target").forEach(function (x) { x.classList.remove("is-target"); });
     var mine = function (o) { return o.ev.id === id; };
-    var o = L.occurrences(today, L.addDays(today, 730)).filter(mine)[0] || L.occurrences(L.addDays(today, -730), today).filter(mine).pop();
+    var o = site.occurrences(today, site.addDays(today, 730)).filter(mine)[0] || site.occurrences(site.addDays(today, -730), today).filter(mine).pop();
     if (!o) return;
     state.cat = ""; state.day = o.key; state.y = o.date.getFullYear(); state.m = o.date.getMonth();
     render();
-    var el = $('.ev-card[data-ev="' + id + '"]');
-    if (el) el.classList.add("is-target");
-    jumpToDay();
+    var el = $('.ev[data-ev="' + id + '"]');
+    if (el) { el.classList.add("is-target"); jumpTo(el); }
   }
   window.addEventListener("hashchange", openFromHash);
 

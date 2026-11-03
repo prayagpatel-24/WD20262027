@@ -5,6 +5,9 @@
   var r = document.documentElement;
   if (p.scale) r.style.setProperty("--text-scale", p.scale);
   if (p.contrast) r.setAttribute("data-contrast", "high");
-  if (p.motion) r.setAttribute("data-motion", "reduce");
   if (p.links) r.setAttribute("data-links", "underline");
+  if (p.spacing) r.setAttribute("data-spacing", "wide");
+  if (p.font) r.setAttribute("data-font", "readable");
+  if (p.images) r.setAttribute("data-images", "hide");
+  if (p.theme === "dark") r.setAttribute("data-theme", "dark");
 })();

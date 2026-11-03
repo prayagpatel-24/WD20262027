@@ -20,11 +20,15 @@
 <body data-page="map">
   <div data-site-header></div>
 
-  <main id="main" tabindex="-1" class="mappage">
+  <main id="main" tabindex="-1" class="mappage" data-view="map">
+    <div class="mappage__views tabs" role="group" aria-label="Show">
+      <button type="button" data-view-btn="list" aria-pressed="false">List</button>
+      <button type="button" data-view-btn="map" aria-pressed="true">Map</button>
+    </div>
     <aside class="mappage__side" aria-labelledby="map-title">
       <div class="mappage__head">
         <h1 id="map-title">Map</h1>
-        <p>Click a pin or a name in the list to see details.</p>
+        <p>Click on a pin or ones of the names in the list to see additional details.</p>
       </div>
 
       <div class="mappage__controls">
@@ -33,11 +37,14 @@
           <label for="map-q" class="sr-only">Search the map</label>
           <input id="map-q" type="search" placeholder="Search by name or street" autocomplete="off">
         </div>
-        <div class="chip-row" role="group" aria-label="Category" data-map-cats></div>
-        <div class="chip-row">
-          <button type="button" class="chip" data-map-toggle="open" aria-pressed="false">Open now</button>
-          <button type="button" class="chip" data-locate aria-pressed="false"><span data-icon="locate-fixed"></span>Near me</button>
+        <div class="map-filters">
+          <label class="opt"><input type="checkbox" data-map-open>Open now</label>
+          <button type="button" class="btn btn--ghost btn--sm" data-locate aria-pressed="false"><span data-icon="locate-fixed"></span>Near me</button>
         </div>
+        <details class="map-cats" open>
+          <summary>Category</summary>
+          <ul data-map-cats></ul>
+        </details>
       </div>
 
       <p class="mappage__count" aria-live="polite" data-map-count></p>

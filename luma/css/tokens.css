@@ -57,6 +57,9 @@
   --gold-deep:  #E0A24C;
   --gold-ink:   #85561A;   /* gold used as text, 6:1 on the page background */
   --ink:        #1C1916;
+  --olive:      #4b4e44;
+  --brown:      #85561A;   /* map pins, same as --gold-ink in the light theme */
+  --on-gold:    #1C1916;   /* text on gold, stays dark in every theme */
   --dark:       #1E1B18;   /* footer and the crisis band */
 
   /* surfaces */
@@ -68,7 +71,8 @@
 
   /* text */
   --text:       var(--ink);
-  --text-muted: #524B43;
+  --heading:    #000000;
+  --text-muted: var(--olive);
   --text-faint: #6B6359;
   --on-dark:    #F7F2E8;
   --on-dark-muted: #B9B0A3;
@@ -97,10 +101,10 @@
   --s-6: 2rem;   --s-7: 3rem;  --s-8: 4rem;   --s-9: 6rem;
   --gutter: clamp(1rem, 4vw, 2.5rem);
   --maxw: 1200px;
-  --radius-sm: 6px; --radius: 10px; --radius-lg: 14px; --radius-pill: 999px;
+  --radius-sm: 4px; --radius: 4px; --radius-lg: 6px;
   --shadow-sm: 0 1px 2px rgba(28,25,22,.06);
-  --shadow:    0 8px 24px -12px rgba(28,25,22,.18), 0 2px 6px rgba(28,25,22,.05);
-  --shadow-lg: 0 24px 60px -24px rgba(28,25,22,.35);
+  --shadow:    0 2px 6px rgba(28,25,22,.08);
+  --shadow-lg: 0 12px 32px -16px rgba(28,25,22,.3);
   --ease: cubic-bezier(.2,.7,.2,1);
   --dur: 200ms;
 }
@@ -112,4 +116,19 @@
   --line: #A89C8A;
   --line-strong: #6E6455;
   --gold-ink: #5E3C0E;
+}
+
+/* Dark theme (Display panel). The site is only dark when the visitor turns it on. */
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --ink: #F7F2E8; --heading: #FFFFFF;
+  --bg: #17140F; --bg-sunken: #1F1B16; --surface: #24201A;
+  --line: #3B352C; --line-strong: #5C5446;
+  --text-muted: #D2CABB; --text-faint: #B5AC9C; --olive: #BDBFB3;
+  --gold-ink: #EFBA6B; --gold-soft: #33291A; --brown: #C98A3E;
+  --focus: #8DB0FF;
+  --success: #7FD0A0; --success-soft: #1C3326; --warn: #E8BC62; --warn-soft: #3A2E12; --danger: #F29383; --danger-soft: #3F1F1A;
+}
+:root[data-theme="dark"][data-contrast="high"] {
+  --text-muted: #F2EDE2; --text-faint: #E4DDCD; --line: #8A8070; --line-strong: #C9BFAA; --gold-ink: #FFD08A;
 }

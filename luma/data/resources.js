@@ -6,28 +6,28 @@
 // verified is the month we last checked the listing against its source.
 
 window.LUMA_CATEGORIES = [
-  { id: "food",      name: "Food & Essentials",      short: "Food",      icon: "cat-food",      color: "#C0643B" },
-  { id: "health",    name: "Health & Medical",       short: "Health",    icon: "cat-health",    color: "#2E7D74" },
-  { id: "crisis",    name: "Crisis & Mental Health", short: "Crisis",    icon: "cat-crisis",    color: "#7A4E8C" },
-  { id: "learn",     name: "Libraries & Learning",   short: "Learning",  icon: "cat-learn",     color: "#3B63A8" },
-  { id: "youth",     name: "Youth & Family",         short: "Family",    icon: "cat-youth",     color: "#B8517A" },
-  { id: "seniors",   name: "Seniors",                short: "Seniors",   icon: "cat-seniors",   color: "#9A7429" },
-  { id: "housing",   name: "Housing & Utilities",    short: "Housing",   icon: "cat-housing",   color: "#7C5236" },
-  { id: "jobs",      name: "Jobs & Money",           short: "Jobs",      icon: "cat-jobs",      color: "#4F6380" },
-  { id: "rec",       name: "Parks & Culture",        short: "Parks",     icon: "cat-rec",       color: "#4C7D3B" },
-  { id: "civic",     name: "Government & Transit",   short: "Civic",     icon: "cat-civic",     color: "#5B5752" },
-  { id: "volunteer", name: "Volunteer & Give",       short: "Volunteer", icon: "cat-volunteer", color: "#1F7A91" }
+  { id: "food",      name: "Food and Essentials",                short: "Food",          icon: "cat-food",      color: "#C0643B" },
+  { id: "health",    name: "Health/Medical",                     short: "Health",        icon: "cat-health",    color: "#2E7D74" },
+  { id: "crisis",    name: "Mental Health",                      short: "Mental Health", icon: "cat-crisis",    color: "#7A4E8C" },
+  { id: "learn",     name: "Educational Institutes",             short: "Education",     icon: "cat-learn",     color: "#3B63A8" },
+  { id: "youth",     name: "Youth and Family Support",           short: "Family",        icon: "cat-youth",     color: "#B8517A" },
+  { id: "seniors",   name: "Senior Citizens",                    short: "Seniors",       icon: "cat-seniors",   color: "#9A7429" },
+  { id: "housing",   name: "Housing and Utilities",              short: "Housing",       icon: "cat-housing",   color: "#7C5236" },
+  { id: "jobs",      name: "Job Opportunities",                  short: "Jobs",          icon: "cat-jobs",      color: "#4F6380" },
+  { id: "rec",       name: "Parks",                              short: "Parks",         icon: "cat-rec",       color: "#4C7D3B" },
+  { id: "civic",     name: "Government Buildings and Services",  short: "Government",    icon: "cat-civic",     color: "#5B5752" },
+  { id: "volunteer", name: "Volunteering",                       short: "Volunteering",  icon: "cat-volunteer", color: "#1F7A91" }
 ];
 
 window.LUMA_AUDIENCES = {
   all: "Everyone", families: "Families", youth: "Children & teens", adults: "Adults",
-  seniors: "Older adults (60+)", disability: "People with disabilities", uninsured: "Uninsured residents",
+  seniors: "Senior citizens", disability: "People with disabilities", uninsured: "Uninsured residents",
   survivors: "Survivors of abuse", students: "Students", jobseekers: "Job seekers", volunteers: "Volunteers"
 };
 
 
 window.LUMA_RESOURCES = [
-  // Food & Essentials
+  // Food and Essentials
   {
     id: "the-place", name: "The Place of Forsyth County", cat: "food", also: ["housing", "volunteer"],
     blurb: "Client-choice food market, emergency assistance and thrift store.",
@@ -88,7 +88,7 @@ window.LUMA_RESOURCES = [
     verified: "2026-10"
   },
 
-  // Health & Medical
+  // Health/Medical
   {
     id: "health-dept", name: "Forsyth County Health Department", cat: "health", also: ["youth"],
     blurb: "Immunizations, WIC nutrition support, screenings and family health services.",
@@ -135,7 +135,7 @@ window.LUMA_RESOURCES = [
     source: { label: "Children's Healthcare of Atlanta: Children's at Forsyth", url: "https://choa.org/locations/childrens-at-forsyth" },
     verified: "2026-10"
   },
-  // Crisis & Mental Health
+  // Mental Health
   {
     id: "988", name: "988 Suicide & Crisis Lifeline", cat: "crisis", also: [],
     blurb: "Call or text 988 any time for free, confidential crisis support.",
@@ -192,7 +192,7 @@ window.LUMA_RESOURCES = [
     verified: "2026-10"
   },
 
-  // Libraries & Learning
+  // Educational Institutes
   {
     id: "lib-cumming", name: "Cumming Library", cat: "learn", also: ["youth", "jobs"],
     blurb: "Downtown branch with books, computers, study rooms and free programs.",
@@ -282,7 +282,7 @@ window.LUMA_RESOURCES = [
     verified: "2026-10"
   },
 
-  // Youth & Family
+  // Youth and Family Support
   {
     id: "bgc-forsyth", name: "Boys & Girls Club of Lanier (Forsyth)", cat: "youth", also: ["volunteer"],
     blurb: "After-school and summer programs for kids in grades K-12.",
@@ -330,7 +330,7 @@ window.LUMA_RESOURCES = [
     verified: "2026-10"
   },
 
-  // Housing & Utilities
+  // Housing and Utilities
   {
     id: "family-promise", name: "Family Promise of Forsyth County", cat: "housing", also: ["youth", "volunteer"],
     blurb: "Temporary shelter and case management for families experiencing homelessness.",
@@ -365,7 +365,7 @@ window.LUMA_RESOURCES = [
     verified: "2026-10"
   },
 
-  // Jobs & Money
+  // Job Opportunities
   {
     id: "worksource", name: "WorkSource Georgia Mountains", cat: "jobs", also: ["learn"],
     blurb: "Free job training funds, career coaching and a Mobile Career Coach at local libraries.",
@@ -389,7 +389,7 @@ window.LUMA_RESOURCES = [
     verified: "2026-10"
   },
 
-  // Parks & Culture
+  // Parks
   {
     id: "central-park", name: "Central Park", cat: "rec", also: ["seniors"],
     blurb: "Large county park with fields, trails, a recreation center and senior center.",
@@ -611,7 +611,7 @@ window.LUMA_RESOURCES = [
     source: { label: "Forsyth County Parks & Recreation: recreation centers", url: "https://parks.forsythco.com/FacilitiesAmenities/RecreationCenters" },
     verified: "2026-10"
   },
-  // Government & Transit
+  // Government Buildings and Services
   {
     id: "freedom-park", name: "Forsyth County Government (Freedom Park)", cat: "civic", also: [],
     blurb: "The county's new one-stop campus for permits, services and county offices.",
@@ -701,14 +701,14 @@ window.LUMA_RESOURCES = [
     source: { label: "Forsyth County: Renovated Sharon Springs tag office reopens", url: "https://forsythco.com/News/renovated-sharon-springs-tag-office-reopens2" },
     verified: "2026-10"
   },
-  // Volunteer & Give
+  // Volunteering
   {
     id: "united-way", name: "United Way of Forsyth County", cat: "volunteer", also: ["food", "youth"],
     blurb: "Funds local nonprofits and connects residents with volunteer projects.",
     desc: "United Way of Forsyth County raises funds for local partner agencies and organizes volunteer projects that address education, financial stability and health across the county.",
     address: "240 Elm Street", city: "Cumming", zip: "30040", lat: 34.21343, lng: -84.13672,
     phone: "770-781-4110", web: "https://www.unitedway.org/local/united-states/georgia/united-way-of-forsyth-county-inc",
-    hours: "Weekdays. Call ahead.", oh: null,
+    hours: "Weekdays", oh: null,
     aud: ["volunteers", "all"], lang: ["English"],
     source: { label: "United Way Worldwide: United Way of Forsyth County", url: "https://www.unitedway.org/local/united-states/georgia/united-way-of-forsyth-county-inc" },
     verified: "2026-10"
@@ -731,7 +731,7 @@ window.LUMA_RESOURCES = [
     desc: "Keep Forsyth County Beautiful organizes community cleanups, recycling drives such as Bring One for the Chipper, and environmental education. Volunteers can borrow cleanup supplies and adopt a road or stream.",
     address: "110 East Main Street, Suite 100", city: "Cumming", zip: "30040", lat: 34.20699, lng: -84.13812,
     phone: "770-205-4573", web: "https://www.keepforsythcountybeautiful.org",
-    hours: "Weekdays. Call ahead.", oh: null,
+    hours: "Weekdays", oh: null,
     aud: ["volunteers", "all"], lang: ["English"],
     source: { label: "Forsyth County: Keep Forsyth County Beautiful news", url: "https://www.forsythco.com/News/tag/keep-forsyth-county-beautiful" },
     verified: "2026-10"

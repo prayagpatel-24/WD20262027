@@ -22,58 +22,37 @@
       <div class="container hero__grid">
         <div>
           <p class="eyebrow">Forsyth County, Georgia</p>
-          <h1 id="hero-title">Find local resources in <em>Forsyth County</em></h1>
-          <p class="lede">Luma brings food pantries, clinics, libraries, parks and support lines from across the county together in one place. Search the directory or open the map to find what you need, and every listing links to the source we checked it against.</p>
+          <h1 id="hero-title">Explore local resources in Forsyth County</h1>
+          <p class="lede">Find access to locsl food pantries, clinics, libraries, parks, and support services across Forsyth County from verified sources.</p>
+
+          <h2 class="cat-row__label" id="cats-title">Categories</h2>
+          <ul class="cat-row" aria-labelledby="cats-title" data-cat-row></ul>
         </div>
 
-        <div class="lumamap">
-          <div class="lumamap__head">
-            <span class="lumamap__title">Forsyth County</span>
-            <span class="lumamap__live" data-open-count></span>
-          </div>
-          <div data-lumamap-svg role="group" aria-label="Map of Forsyth County with a dot for each location. Each dot links to its listing."></div>
-          <div class="lumamap__tip" data-lumamap-tip aria-hidden="true"></div>
-          <div class="lumamap__foot">
-            <span><span data-stat="mapped">38</span> places on the map</span>
-            <a class="link-arrow" href="map.html">Open full map <span data-icon="arrow-right"></span></a>
+        <div>
+          <div class="lumamap">
+            <div class="lumamap__head">
+              <span class="lumamap__title">Forsyth County</span>
+              <span class="lumamap__live" data-open-count></span>
+            </div>
+            <div data-lumamap-svg role="group" aria-label="Map of Forsyth County with a dot for each location. Each dot links to its listing."></div>
+            <div class="lumamap__tip" data-lumamap-tip aria-hidden="true"></div>
+            <ul class="pin-legend" aria-label="Dot colors" data-pin-legend></ul>
+            <div class="lumamap__foot">
+              <span><span data-stat="mapped">38</span> places on the map</span>
+              <a class="link-arrow" href="map.html">Open full map <span data-icon="arrow-right"></span></a>
+            </div>
           </div>
         </div>
-      </div>
-    </section>
-
-    <section class="section" aria-labelledby="browse-title">
-      <div class="container">
-        <div class="section-head reveal">
-          <h2 id="browse-title">Browse by category</h2>
-          <p>Pick a category to see every listing in it. You can narrow it down by language and who it serves.</p>
-        </div>
-        <div class="cat-grid reveal" data-cat-grid></div>
       </div>
     </section>
 
     <section class="section" aria-labelledby="events-title">
       <div class="container">
-        <div class="section-head reveal">
-          <h2 id="events-title">Coming up</h2>
-          <p>Dates come from each organizer. Projected dates are marked so you can double-check them.</p>
-        </div>
+        <h2 id="events-title">Coming up</h2>
+        <p class="agenda__note">Note: Dates marked "Projected" are based on last year.</p>
         <ol class="agenda" data-agenda></ol>
-        <p style="margin-top:var(--s-5)"><a class="link-arrow" href="calendar.html">Full calendar <span data-icon="arrow-right"></span></a></p>
-      </div>
-    </section>
-
-    <section class="section--tight" style="padding-bottom:clamp(3rem,6vw,5rem)" aria-labelledby="cta-title">
-      <div class="container">
-        <div class="cta-strip reveal">
-          <div>
-            <h2 id="cta-title">Know about something we missed?</h2>
-            <p>Tell us about it, or find a place to volunteer.</p>
-          </div>
-          <div class="cta-strip__actions">
-            <a class="btn" href="volunteering.html#suggest">Suggest a resource</a>
-            <a class="btn btn--ghost" href="volunteering.html">Volunteer</a>
-          </div>
-        </div>
+        <p class="agenda__more"><a class="link-arrow" href="calendar.html">Full calendar <span data-icon="arrow-right"></span></a></p>
       </div>
     </section>
   </main>

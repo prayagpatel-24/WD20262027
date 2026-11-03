@@ -1,7 +1,7 @@
 // Sources page: builds the list from the data files, grouped by source.
 document.addEventListener("DOMContentLoaded", function () {
   "use strict";
-  var L = window.Luma, $ = L.$, esc = L.esc;
+  var site = window.Luma, $ = site.$, esc = site.esc;
 
   function group(items, getSrc, getName, link) {
     var byUrl = {}, order = [];
@@ -18,14 +18,23 @@ document.addEventListener("DOMContentLoaded", function () {
     }).join("");
   }
 
-  $("[data-photo-credits]").innerHTML = L.RES.map(function (r) {
+  // one line per photographer or organization, then the listings whose photos came from them
+  var byCredit = {}, credits = [];
+  site.resources.forEach(function (r) {
     var p = window.LUMA_IMAGES[r.id];
-    return p ? '<tr><td><a href="resource.html?id=' + r.id + '">' + esc(r.name) + '</a></td><td><a href="' + esc(p.page) + '" target="_blank" rel="noopener">' + esc(p.credit) + "</a>" + (p.license ? " (" + esc(p.license) + ")" : "") + "</td></tr>" : "";
+    if (!p) return;
+    var key = p.credit + (p.license ? " (" + p.license + ")" : "");
+    if (!byCredit[key]) { byCredit[key] = []; credits.push(key); }
+    byCredit[key].push('<a href="' + esc(p.page) + '" target="_blank" rel="noopener">' + esc(r.name) + "</a>");
+  });
+  credits.sort();
+  $("[data-photo-credits]").innerHTML = credits.map(function (k) {
+    return "<li><strong>" + esc(k) + "</strong>: " + byCredit[k].join("; ") + "</li>";
   }).join("");
 
-  $("[data-n-res]").textContent = L.RES.length;
-  $("[data-refs-res]").innerHTML = group(L.RES, function (r) { return r.source; }, function (r) { return r.name; },
+  $("[data-n-res]").textContent = site.resources.length;
+  $("[data-refs-res]").innerHTML = group(site.resources, function (r) { return r.source; }, function (r) { return r.name; },
     function (r, n) { return '<a href="resource.html?id=' + r.id + '">' + esc(n) + "</a>"; });
-  $("[data-refs-ev]").innerHTML = group(L.EVENTS, function (e) { return e.source; }, function (e) { return e.title; },
+  $("[data-refs-ev]").innerHTML = group(site.events, function (e) { return e.source; }, function (e) { return e.title; },
     function (e, n) { return '<a href="calendar.html#' + e.id + '">' + esc(n) + "</a>"; });
 });

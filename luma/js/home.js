@@ -1,12 +1,12 @@
-// Home page: small county map, category tiles and upcoming events.
+// Home page: small county map, category links and upcoming events.
 document.addEventListener("DOMContentLoaded", function () {
   "use strict";
-  var L = window.Luma, $ = L.$, $all = L.$all, icon = L.icon, esc = L.esc;
-  var RES = L.RES, CATS = L.CATS;
+  var site = window.Luma, $ = site.$, $all = site.$all, icon = site.icon, esc = site.esc;
+  var resources = site.resources, categories = site.categories;
 
-  var isOpen = function (r) { var s = L.openStatus(r.oh); return s && s.open; };
-  $("[data-stat=mapped]").textContent = RES.filter(function (r) { return r.lat; }).length;
-  $("[data-open-count]").textContent = RES.filter(isOpen).length + " open now";
+  var isOpen = function (r) { var s = site.openStatus(r.oh); return s && s.open; };
+  $("[data-stat=mapped]").textContent = resources.filter(function (r) { return r.lat; }).length;
+  $("[data-open-count]").textContent = resources.filter(isOpen).length + " open now";
 
   // County map drawn as SVG from the boundary file, so it works without internet
   (function drawMap() {
@@ -20,20 +20,22 @@ document.addEventListener("DOMContentLoaded", function () {
     function px(lon, lat) { return [pad + (lon - minX) * kx * scale, pad + (maxY - lat) * scale]; }
     var d = ring.map(function (p, i) { var q = px(p[0], p[1]); return (i ? "L" : "M") + q[0].toFixed(1) + " " + q[1].toFixed(1); }).join("") + "Z";
     var cumming = px(-84.1402, 34.2073);
-    var dots = RES.filter(function (r) { return r.lat; }).map(function (r) {
-      var c = L.CAT[r.cat], p = px(r.lng, r.lat), x = p[0].toFixed(1), y = p[1].toFixed(1);
+    var dots = resources.filter(function (r) { return r.lat; }).map(function (r) {
+      var p = px(r.lng, r.lat), x = p[0].toFixed(1), y = p[1].toFixed(1);
       return '<a class="hotspot" href="resource.html?id=' + r.id + '" data-id="' + r.id + '" aria-label="' + esc(r.name) + '">' +
         '<circle class="ring" cx="' + x + '" cy="' + y + '" r="9" fill="none" stroke="transparent"/>' +
-        '<circle class="core" cx="' + x + '" cy="' + y + '" r="6.5" fill="' + c.color + '"/></a>';
+        '<circle class="core pin--' + site.pinGroup(r.cat).id + '" cx="' + x + '" cy="' + y + '" r="6.5"/></a>';
     }).join("");
     host.innerHTML = '<svg viewBox="0 0 ' + W + " " + H + '" role="presentation"><path class="county" d="' + d + '"/>' + dots +
       '<text class="city-label" x="' + (cumming[0] + 34).toFixed(0) + '" y="' + (cumming[1] + 4).toFixed(0) + '">Cumming</text></svg>';
 
+    $("[data-pin-legend]").innerHTML = site.pinLegend();
+
     var tip = $("[data-lumamap-tip]"), card = host.parentNode;
     function show(a) {
-      var r = L.byId(a.getAttribute("data-id")), st = L.openStatus(r.oh);
+      var r = site.byId(a.getAttribute("data-id")), status = site.openStatus(r.oh);
       var box = a.querySelector(".core").getBoundingClientRect(), cb = card.getBoundingClientRect();
-      tip.innerHTML = "<strong>" + esc(r.name) + "</strong>" + esc(L.CAT[r.cat].name) + (st ? ", " + (st.open ? "open now" : "closed now") : "");
+      tip.innerHTML = "<strong>" + esc(r.name) + "</strong>" + esc(site.catById[r.cat].name) + (status ? ", " + (status.open ? "open now" : "closed now") : "");
       tip.style.left = (box.left - cb.left + box.width / 2) + "px";
       tip.style.top = (box.top - cb.top) + "px";
       tip.classList.add("is-on");
@@ -47,28 +49,27 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   })();
 
-  // Category tiles
-  $("[data-cat-grid]").innerHTML = CATS.map(function (c) {
-    var n = RES.filter(function (r) { return L.inCat(r, c.id); }).length;
-    return '<a class="cat-tile" style="--c:' + c.color + '" href="directory.html?cat=' + c.id + '">' +
-      '<span class="cat-tile__icon">' + icon(c.icon) + "</span>" +
-      '<span class="cat-tile__text"><span class="cat-tile__name">' + esc(c.name) + '</span><span class="cat-tile__count">' + n + " listings</span></span>" +
-      '<span class="cat-tile__arrow">' + icon("arrow-right", "icon--sm") + "</span></a>";
+  // Crisis, food and health first since those are the most urgent
+  var first = ["crisis", "food", "health"];
+  var ordered = first.map(function (id) { return site.catById[id]; }).concat(categories.filter(function (c) { return first.indexOf(c.id) === -1; }));
+  $("[data-cat-row]").innerHTML = ordered.map(function (c) {
+    var n = resources.filter(function (r) { return site.inCat(r, c.id); }).length;
+    return '<li><a href="directory.html?cat=' + c.id + '">' + icon(c.icon) + '<span class="cat-row__name">' + site.catName(c) + '</span><span class="cat-row__n">' + n + "</span></a></li>";
   }).join("");
 
   // Next few events (each series shows once)
   var seen = {};
-  var occ = L.occurrences(L.today0(), L.addDays(L.today0(), 75)).filter(function (o) {
+  var upcoming = site.occurrences(site.startOfToday(), site.addDays(site.startOfToday(), 75)).filter(function (o) {
     if (seen[o.ev.id]) return false; seen[o.ev.id] = true; return true;
-  }).slice(0, 5);
-  $("[data-agenda]").innerHTML = occ.map(function (o) {
-    var ev = o.ev, c = L.CAT[ev.cat], d = o.date;
-    var time = ev.start ? L.fmtTime(ev.start) + (ev.finish ? " to " + L.fmtTime(ev.finish) : "") : "All day";
-    var badge = ev.status === "tentative" ? '<span class="badge badge--warn">Projected</span>' : ev.status === "recurring" ? '<span class="badge">Recurring</span>' : '<span class="badge badge--confirmed">Confirmed</span>';
+  }).slice(0, 6);
+  $("[data-agenda]").innerHTML = upcoming.map(function (o) {
+    var ev = o.ev, d = o.date;
+    var time = ev.start ? site.fmtTime(ev.start) + (ev.finish ? " to " + site.fmtTime(ev.finish) : "") : "All day";
     return '<li class="agenda__item">' +
-      '<div class="datebox" aria-hidden="true"><div class="datebox__m">' + L.MON_SHORT[d.getMonth()].replace(".", "") + '</div><div class="datebox__d">' + d.getDate() + '</div><div class="datebox__w">' + L.DAY_SHORT[d.getDay()] + "</div></div>" +
-      '<div><h3 class="agenda__title"><a href="calendar.html#' + ev.id + '"><span class="sr-only">' + L.DAY_NAMES[d.getDay()] + ", " + L.MONTHS[d.getMonth()] + " " + d.getDate() + ": </span>" + esc(ev.title) + "</a></h3>" +
-        '<div class="agenda__meta"><span>' + icon("clock") + esc(time) + "</span><span>" + icon("map-pin") + esc(ev.place) + "</span></div></div>" +
-      '<div class="agenda__side"><span class="tag">' + esc(c.short) + "</span>" + badge + "</div></li>";
+      '<span class="agenda__date">' + site.DAY_SHORT[d.getDay()] + ", " + site.MON_SHORT[d.getMonth()] + " " + d.getDate() + "</span>" +
+      '<span class="agenda__what"><a class="agenda__title" href="calendar.html#' + ev.id + '">' + esc(ev.title) + "</a>" +
+        (ev.status === "tentative" ? ' <span class="projected">Projected</span>' : "") +
+        '<span class="agenda__place">' + esc(ev.place) + "</span></span>" +
+      '<span class="agenda__time">' + esc(time) + "</span></li>";
   }).join("");
 });

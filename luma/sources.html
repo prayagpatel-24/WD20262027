@@ -19,13 +19,16 @@
 
   <main id="main" tabindex="-1">
     <section class="page-hero">
-      <div class="container">
+      <div class="container container--narrow">
         <h1>Sources</h1>
-        <p class="lede">Where the information on Luma comes from. This list is built from the same data as the site, so it always matches.</p>
+        <p class="lede">Where the information on Luma comes from.</p>
+        <ul class="jump-links" aria-label="On this page">
+          <li><a href="#resources-src">Listings</a></li><li><a href="#events-src">Events</a></li><li><a href="#site-src">Other facts</a></li><li><a href="#photos">Photos</a></li><li><a href="#credits">Credits</a></li>
+        </ul>
       </div>
     </section>
 
-    <div class="container container--narrow section">
+    <div class="container container--narrow sources">
       <div class="prose" style="max-width:none">
         <h2 id="resources-src">Listings</h2>
         <p>Sources for the <span data-n-res>46</span> listings in the directory. Each listing also shows its source on its own page.</p>
@@ -42,12 +45,7 @@
 
         <h2 id="photos">Photos</h2>
         <p>Each photo belongs to the person or organization credited here and is used for this student project. Photos from Wikimedia Commons are used under the license shown.</p>
-        <div class="table-wrap">
-          <table class="data">
-            <thead><tr><th scope="col">Listing</th><th scope="col">Photo from</th></tr></thead>
-            <tbody data-photo-credits></tbody>
-          </table>
-        </div>
+        <ul class="credits" data-photo-credits></ul>
 
         <h2 id="credits">Credits</h2>
         <div class="table-wrap">
